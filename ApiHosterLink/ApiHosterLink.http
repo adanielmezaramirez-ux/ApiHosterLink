@@ -1,0 +1,6 @@
+@ApiHosterLink_HostAddress = http://hosterlink.somee.com
+
+GET {{ApiHosterLink_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
