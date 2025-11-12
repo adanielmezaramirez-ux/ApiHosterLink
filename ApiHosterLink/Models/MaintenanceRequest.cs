@@ -52,4 +52,6 @@ public class MaintenanceRequest
 
     [BsonElement("actualCost")]
     public decimal? ActualCost { get; set; }
+    [BsonElement ("paiddate")]
+    public DateTime PaidDate {  get; set; }
 }

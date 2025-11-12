@@ -1,7 +1,1 @@
-﻿namespace ApiHosterLink;
-
-public class MongoDBSettings
-{
-    public string ConnectionString { get; set; }
-    public string DatabaseName { get; set; }
-}
+﻿namespace ApiHosterLink;public class MongoDBSettings{    public string ConnectionString { get; set; }    public string DatabaseName { get; set; }}
