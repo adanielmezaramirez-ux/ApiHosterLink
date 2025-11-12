@@ -2,6 +2,7 @@
 using System.Text;
 using ApiHosterLink;
 using ApiHosterLink.Services;
+using ApiHosterLink.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
@@ -52,6 +53,7 @@ builder.Services.AddSingleton<IMongoDatabase>(serviceProvider =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<IValidationService, ValidationService>();
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
@@ -65,25 +67,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     app.UseSwaggerUI();
 }
 
-app.UseExceptionHandler(errorApp =>
-{
-    errorApp.Run(async context =>
-    {
-        var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
-        var exception = exceptionHandlerPathFeature?.Error;
-
-        context.Response.StatusCode = 500;
-        context.Response.ContentType = "application/json";
-
-        var result = System.Text.Json.JsonSerializer.Serialize(new
-        {
-            error = exception?.Message,
-            stackTrace = exception?.StackTrace
-        });
-
-        await context.Response.WriteAsync(result);
-    });
-});
+app.UseCustomExceptionMiddleware();
 
 app.UseHttpsRedirection();
 
