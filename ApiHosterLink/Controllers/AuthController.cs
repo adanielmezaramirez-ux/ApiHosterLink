@@ -114,8 +114,55 @@ namespace ApiHosterLink.Controllers
             return CreatedAtAction(nameof(Login), response);
         }
 
+        [HttpPost("RegisterByAdmin")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RegisterByAdmin(User newUser)
+        {
+            // Necesitamos la contraseña para hashear
+            if (string.IsNullOrEmpty(newUser.Password) || newUser.Password.Length < 6)
+                return BadRequest("La contraseña debe tener al menos 6 caracteres");
+
+            if (string.IsNullOrEmpty(newUser.Name) || newUser.Name.Length < 2)
+                return BadRequest("El nombre debe tener al menos 2 caracteres");
+
+            if (string.IsNullOrEmpty(newUser.Email))
+                return BadRequest("El email es requerido");
+
+            if (string.IsNullOrEmpty(newUser.Role))
+                return BadRequest("El rol es requerido");
+
+            // Aseguramos que solo se puedan asignar roles válidos: Admin, Tenant, Owner
+            var validRoles = new[] { "Admin", "Tenant", "Owner" };
+            if (!validRoles.Contains(newUser.Role))
+                return BadRequest("Rol no válido");
+
+            // Verificar si el email ya existe - sanitizado
+            var emailFilter = Builders<User>.Filter.Eq(u => u.Email, newUser.Email.Trim().ToLower());
+            var existingUser = await _users.Find(emailFilter).FirstOrDefaultAsync();
+            if (existingUser != null)
+                return BadRequest("El email ya está registrado");
+
+            newUser.Email = newUser.Email.Trim().ToLower();
+
+            newUser.PasswordHash = _passwordHasher.HashPassword(newUser, newUser.Password);
+
+            // Limpiar el campo de contraseña antes de guardar
+            newUser.Password = null;
+
+            newUser.CreatedAt = DateTime.UtcNow;
+            newUser.IsActive = true;
+
+            await _users.InsertOneAsync(newUser);
+
+            // 5. Devolver confirmación simple (No devolvemos el Token al Admin, solo confirmamos la creación)
+            return Ok(new
+            {
+                Message = $"Usuario '{newUser.Name}' creado con el rol '{newUser.Role}'."
+            });
+        }
+
         [HttpPost("logout")]
-        [Authorize] // Requiere autenticación pero cualquier rol
+        [Authorize]
         public IActionResult Logout()
         {
             // En JWT stateless, el logout es manejado en el cliente
