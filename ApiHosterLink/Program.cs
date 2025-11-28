@@ -18,6 +18,20 @@ var secretKey = jwtSettings["SecretKey"] ?? "7f9bC2@Gz!Lq3R8tXv#Hn5PzWm$Kd1sFjQe
 
 builder.Services.AddScoped<IJwtService, JwtService>();
 
+// 🔵 CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder => builder
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+    );
+});
+
+// 🔵 Middleware
+builder.Services.AddTransient<CustomExceptionMiddleware>();
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -67,9 +81,11 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     app.UseSwaggerUI();
 }
 
-app.UseCustomExceptionMiddleware();
+app.UseMiddleware<CustomExceptionMiddleware>();
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
