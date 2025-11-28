@@ -18,7 +18,6 @@ var secretKey = jwtSettings["SecretKey"] ?? "7f9bC2@Gz!Lq3R8tXv#Hn5PzWm$Kd1sFjQe
 
 builder.Services.AddScoped<IJwtService, JwtService>();
 
-// 🔵 CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -29,7 +28,6 @@ builder.Services.AddCors(options =>
     );
 });
 
-// 🔵 Middleware
 builder.Services.AddTransient<CustomExceptionMiddleware>();
 
 builder.Services.AddAuthentication(options =>
